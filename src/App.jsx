@@ -32,16 +32,8 @@ function useSearch() {
 
 function App() {
   const { search, updateSearch, error } = useSearch();
-  const movies = responseMovies.Search;
+  const [movies, setMovies] = useState([]);
 
-  const mappedMovies = movies.map((movie) => {
-    return {
-      id: movie.imdbID,
-      title: movie.Title,
-      year: movie.Year,
-      poster: movie.Poster,
-    };
-  });
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -70,7 +62,7 @@ function App() {
       </header>
 
       <main>
-        <Movies movies={mappedMovies} />
+        <Movies movies={movies} />
       </main>
     </div>
   );
