@@ -1,8 +1,8 @@
-import { useState, useId, useRef, useCallback } from "react";
+import { useState, useId } from "react";
 import "./App.css";
 import { Movies } from "./components/Movies";
 import { useEffect } from "react";
-import { searchMovies } from "./services/movies";
+import { useMovies } from "./hooks/useMovies";
 
 function useSearch() {
   const [search, updateSearch] = useState("");
@@ -31,26 +31,9 @@ function useSearch() {
 }
 
 function App() {
-  const { search, updateSearch } = useSearch();
-  const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const previousSearch = useRef(search);
-
-  const getMovies = useCallback(async ({ search }) => {
-    if (search === previousSearch.current) return;
-    try {
-      setLoading(true);
-      setError(null);
-      previousSearch.current = search;
-      const newMovies = await searchMovies({ search });
-      setMovies(newMovies);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [sort, setSort] = useState(null);
+  const { search, updateSearch, error } = useSearch();
+  const { movies, loading, getMovies } = useMovies({ search, sort });
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -60,6 +43,10 @@ function App() {
   const handleChange = (event) => {
     const newSearch = event.target.value;
     updateSearch(newSearch);
+  };
+
+  const handleSort = () => {
+    setSort(!sort);
   };
 
   return (
@@ -73,6 +60,7 @@ function App() {
             type="text"
             placeholder="Busca una película"
           />
+          <input type="checkbox" onChange={handleSort} checked={sort} />
           <button>Buscar</button>
         </form>
         {error && <p style={{ color: "red" }}>{error}</p>}
