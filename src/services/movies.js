@@ -6,11 +6,11 @@ export const searchMovies = async ({ search }) => {
 
   try {
     const res = await fetch(API_URL);
-    const json = res.json();
+    const json = await res.json();
 
     const movies = json.Search;
 
-    return movies.map((movie) => {
+    return movies?.map((movie) => {
       return {
         id: movie.imdbID,
         title: movie.Title,

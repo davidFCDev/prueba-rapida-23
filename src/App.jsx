@@ -1,8 +1,8 @@
-import { useState, useId } from "react";
+import { useState, useId, useRef, useCallback } from "react";
 import "./App.css";
 import { Movies } from "./components/Movies";
-import responseMovies from "./mocks/with-results.json";
 import { useEffect } from "react";
+import { searchMovies } from "./services/movies";
 
 function useSearch() {
   const [search, updateSearch] = useState("");
@@ -31,13 +31,30 @@ function useSearch() {
 }
 
 function App() {
-  const { search, updateSearch, error } = useSearch();
+  const { search, updateSearch } = useSearch();
   const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const previousSearch = useRef(search);
 
+  const getMovies = useCallback(async ({ search }) => {
+    if (search === previousSearch.current) return;
+    try {
+      setLoading(true);
+      setError(null);
+      previousSearch.current = search;
+      const newMovies = await searchMovies({ search });
+      setMovies(newMovies);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Buscando películas...");
+    getMovies({ search });
   };
 
   const handleChange = (event) => {
@@ -61,9 +78,7 @@ function App() {
         {error && <p style={{ color: "red" }}>{error}</p>}
       </header>
 
-      <main>
-        <Movies movies={movies} />
-      </main>
+      <main>{loading ? <p>Loading...</p> : <Movies movies={movies} />}</main>
     </div>
   );
 }
